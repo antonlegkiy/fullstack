@@ -1,7 +1,14 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const mongoose = require('mongoose');
+
+const Post = require('./models/post');
 
 const app = express();
+
+mongoose.connect("mongodb+srv://SuperUser:gBLfp8zqppEakvw5@cluster0-v51ke.mongodb.net/full-stack?retryWrites=true")
+  .then(() => console.log('Connected to database'))
+  .catch(() => console.log('Connection failed'));
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -14,23 +21,19 @@ app.use((req, res, next) => {
 });
 
 app.post('/api/posts', (req, res) => {
-  const post = req.body;
-  console.log(post);
+  const post = new Post({
+    title: req.body.title,
+    content: req.body.content
+  });
+  post.save();
+
   res.status(201).json({ message: 'post saved successfully' });
 });
 
 app.get('/api/posts', (req, res) => {
-  const posts = [{
-    id: '123jkjk123ih',
-    title: 'First server post',
-    content: 'this is first server post'
-  }, {
-    id: '13424ewfk13423ih',
-    title: 'Second server post',
-    content: 'this is second server post'
-  }];
-
-  res.status(200).json(posts);
+  Post.find().then(posts => {
+    res.status(200).json(posts);
+  });
 });
 
 module.exports = app;
