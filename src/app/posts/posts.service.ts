@@ -4,7 +4,6 @@ import { Injectable } from '@angular/core';
 import { map } from 'rxjs/operators';
 
 import { Post } from './post.model';
-import {s, st} from '@angular/core/src/render3';
 
 @Injectable()
 export class PostsService {
