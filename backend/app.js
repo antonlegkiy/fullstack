@@ -1,14 +1,23 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
+const fs = require('fs');
+const path = require('path');
 
 const postsRouter = require('./routes/posts');
 
-const app = express();
+fs.readFile(path.normalize(__dirname + "/../mongo.config.json"), 'utf-8', (err, data) => {
+  if (!err) {
+    const config = JSON.parse(data);
+    mongoose.connect(`mongodb+srv://${config.username}:${config.password}@cluster0-v51ke.mongodb.net/${config.name}?retryWrites=true`)
+      .then(() => console.log('Connected to database'))
+      .catch(() => console.log('Connection failed'));
+  } else {
+    console.log(`error while reading mongo configuration: ${err}`);
+  }
+});
 
-mongoose.connect("mongodb+srv://SuperUser:gBLfp8zqppEakvw5@cluster0-v51ke.mongodb.net/full-stack?retryWrites=true")
-  .then(() => console.log('Connected to database'))
-  .catch(() => console.log('Connection failed'));
+const app = express();
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
