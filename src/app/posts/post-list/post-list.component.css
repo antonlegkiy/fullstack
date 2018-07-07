@@ -6,3 +6,7 @@
 .no-posts-p {
   text-align: center;
 }
+
+mat-spinner {
+  margin: auto;
+}

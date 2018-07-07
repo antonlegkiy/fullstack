@@ -12,6 +12,7 @@ import { PostsService } from '../posts.service';
 })
 export class PostCreateComponent implements OnInit {
   post: Post;
+  spinner = false;
   private mode = 'create';
   private postID: string;
 
@@ -23,12 +24,14 @@ export class PostCreateComponent implements OnInit {
       if (paramMap.has('postID')) {
         this.mode = 'edit';
         this.postID = paramMap.get('postID');
+        this.spinner = true;
         this.postsService.getPost(this.postID).subscribe(data => {
           this.post = {
             id: data._id,
             title: data.title,
             content: data.content
           };
+          this.spinner = false;
         });
       } else {
         this.mode = 'create';
@@ -48,6 +51,7 @@ export class PostCreateComponent implements OnInit {
       content: form.value.content
     };
 
+    this.spinner = true;
     if (this.mode === 'create') {
       this.postsService.addPost(post);
     }

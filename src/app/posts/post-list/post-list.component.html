@@ -1,4 +1,4 @@
-<mat-accordion *ngIf="posts.length; else noPosts">
+<mat-accordion *ngIf="!spinner && posts.length; else noPosts">
   <mat-expansion-panel *ngFor="let post of posts">
     <mat-expansion-panel-header>
       {{ post.title }}
@@ -11,6 +11,8 @@
   </mat-expansion-panel>
 </mat-accordion>
 
-<ng-template #noPosts>
+<ng-template #noPosts *ngIf="!spinner">
   <p class="mat-body-1 no-posts-p">There is no posts yet...</p>
 </ng-template>
+
+<mat-spinner *ngIf="spinner"></mat-spinner>
