@@ -4,6 +4,7 @@ import { Injectable } from '@angular/core';
 import { map } from 'rxjs/operators';
 
 import { Post } from './post.model';
+import {s, st} from '@angular/core/src/render3';
 
 @Injectable()
 export class PostsService {
@@ -19,7 +20,7 @@ export class PostsService {
           return {
             title: post.title,
             content: post.content,
-            id: post._id
+            id: post['_id']
           };
         });
       })))
@@ -34,10 +35,19 @@ export class PostsService {
   }
 
   addPost(post: Post) {
-    this.http.post<{message: string}>('http://localhost:3000/api/posts', post)
+    this.http.post<{id: string}>('http://localhost:3000/api/posts', post)
+      .subscribe((data) => {
+        post.id = data.id;
+        this.posts.push(post);
+        this.postsUpdated.next([...this.posts]);
+      });
+  }
+
+  deletePost(id: string) {
+    this.http.delete<{message: string}>(`http://localhost:3000/api/posts/${id}`)
       .subscribe((data) => {
         console.log(data.message);
-        this.posts.push(post);
+        this.posts = this.posts.filter(post => post.id !== id);
         this.postsUpdated.next([...this.posts]);
       });
   }

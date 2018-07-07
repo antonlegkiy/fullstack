@@ -25,14 +25,21 @@ app.post('/api/posts', (req, res) => {
     title: req.body.title,
     content: req.body.content
   });
-  post.save();
-
-  res.status(201).json({ message: 'post saved successfully' });
+  post.save().then(result => {
+    res.status(201).json({ id: result._id });
+  });
 });
 
 app.get('/api/posts', (req, res) => {
   Post.find().then(posts => {
     res.status(200).json(posts);
+  });
+});
+
+app.delete('/api/posts/:id', (req, res) => {
+  Post.deleteOne({ _id: req.params.id }, () => {
+    console.log('deleted successfully');
+    res.status(200).json({message: 'was removed'});
   });
 });
 
