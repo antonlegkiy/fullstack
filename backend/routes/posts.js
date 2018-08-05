@@ -1,16 +1,41 @@
 const express = require('express');
+const multer  = require('multer');
 
 const Post = require('../models/post');
 
-const router = express.Router();
+const MIME_TYPES = {
+  'image/png': 'png',
+  'image/jpeg': 'jpeg',
+  'image/jpg': 'jpg'
+};
 
-router.post('', (req, res) => {
+const router = express.Router();
+const storage = multer.diskStorage({
+  destination: (req, file, callback) => {
+    const error = MIME_TYPES[file.mimetype] ? null : new Error('Invalid mime type');
+
+    callback(error, 'backend/images');
+  },
+  filename: (req, file, callback) => {
+    const name = file.originalname.toLowerCase().split(' ').join('_');
+    const ext = MIME_TYPES[file.mimetype];
+
+    callback(null, `${name}-${Date.now()}.${ext}`)
+  }
+});
+
+router.post('', multer({ storage: storage }).single('postImage'), (req, res) => {
+  const url = req.protocol + '://' + req.get('host');
   const post = new Post({
     title: req.body.title,
-    content: req.body.content
+    content: req.body.content,
+    imagePath: url + '/images/' + req.file.filename
   });
   post.save().then(result => {
-    res.status(201).json({ id: result._id });
+    res.status(201).json({
+      ...result,
+      id: result._id
+    });
   });
 });
 
@@ -36,11 +61,19 @@ router.delete('/:id', (req, res) => {
   });
 });
 
-router.put('/:id', (req, res) => {
+router.put('/:id', multer({ storage: storage }).single('postImage'), (req, res) => {
+  let imagePath = req.body.imagePath;
+
+  if (req.file) {
+    const url = req.protocol + '://' + req.get('host');
+    imagePath = url + '/images/' + req.file.filename;
+  }
+
   const post = new Post({
     _id: req.body.id,
     title: req.body.title,
-    content: req.body.content
+    content: req.body.content,
+    imagePath: imagePath
   });
 
   Post.updateOne({ _id: req.params.id }, post).then(result => {

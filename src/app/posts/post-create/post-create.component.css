@@ -10,3 +10,20 @@ mat-form-field, textarea {
 mat-spinner {
   margin: auto;
 }
+
+input[type="file"] {
+  display: none;
+}
+
+button[type="submit"] {
+  float: right;
+}
+
+.picPreview {
+  height: 5rem;
+  margin: 1rem 0;
+}
+
+.picPreview img {
+  max-height: 100%;
+}
