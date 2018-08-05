@@ -21,7 +21,8 @@ export class PostsService {
           return {
             title: post.title,
             content: post.content,
-            id: post['_id']
+            id: post['_id'],
+            imagePath: post.imagePath
           };
         });
       })))
@@ -32,25 +33,44 @@ export class PostsService {
   }
 
   getPost(id) {
-    return this.http.get<{ _id: string, title: string, content: string }>(`http://localhost:3000/api/posts/${id}`);
+    return this.http.get<{ _id: string, title: string, content: string, imagePath: string }>(`http://localhost:3000/api/posts/${id}`);
   }
 
   getPostsUpdatedList() {
     return this.postsUpdated.asObservable();
   }
 
-  addPost(post: Post) {
-    this.http.post<{id: string}>('http://localhost:3000/api/posts', post)
-      .subscribe(data => {
-        post.id = data.id;
-        this.posts.push(post);
+  addPost(post: Post, image) {
+    const data = new FormData();
+    data.append('title', post.title);
+    data.append('content', post.content);
+    data.append('postImage', image, post.title);
+    this.http.post<Post>('http://localhost:3000/api/posts', data)
+      .subscribe(result => {
+        const updatedPost = {
+          id: result.id,
+          title: post.title,
+          content: post.content,
+          imagePath: result.imagePath
+        };
+        this.posts.push(updatedPost);
         this.postsUpdated.next([...this.posts]);
         this.router.navigate(['/']);
       });
   }
 
-  updatePost(id: string, post: Post) {
-    this.http.put<{message: string}>(`http://localhost:3000/api/posts/${id}`, post)
+  updatePost(id: string, post: Post, image: File | string) {
+    let postData: Post | FormData;
+    if (typeof image === 'object') {
+      postData = new FormData();
+      postData.append('id', id);
+      postData.append('title', post.title);
+      postData.append('content', post.content);
+      postData.append('postImage', image, post.title);
+    } else {
+      postData = post;
+    }
+    this.http.put<{message: string}>(`http://localhost:3000/api/posts/${id}`, postData)
       .subscribe(data => {
         this.router.navigate(['/']);
       });
@@ -59,7 +79,6 @@ export class PostsService {
   deletePost(id: string) {
     this.http.delete<{message: string}>(`http://localhost:3000/api/posts/${id}`)
       .subscribe(data => {
-        console.log(data.message);
         this.posts = this.posts.filter(post => post.id !== id);
         this.postsUpdated.next([...this.posts]);
       });
