@@ -40,8 +40,21 @@ router.post('', multer({ storage: storage }).single('postImage'), (req, res) => 
 });
 
 router.get('', (req, res) => {
-  Post.find().then(posts => {
-    res.status(200).json(posts);
+  const size = +req.query.size;
+  const page = +req.query.page;
+  const postQuery = Post.find();
+  let fetchedPosts;
+
+  if (size && page) {
+    postQuery
+      .skip(size * (page - 1))
+      .limit(size);
+  }
+  postQuery.then(posts => {
+    fetchedPosts = posts;
+    return Post.count();
+  }).then(count => {
+    res.status(200).json({ posts: fetchedPosts, totalPosts: count});
   });
 });
 
